@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입 페이지</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-5">회원가입</h1>
+    <hr/>
+    <form id="joinForm">
+        <div class="form-group">
+            <input type="text" id="name" class="form-control" placeholder="Name">
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" class="form-control" placeholder="Password">
+        </div>
+        <div class="form-group">
+            <input type="email" id="email" class="form-control" placeholder="Email">
+        </div>
+        <button type="submit" class="btn btn-primary">회원가입</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('joinForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var name = document.getElementById('name').value;
+        var password = document.getElementById('password').value;
+        var email = document.getElementById('email').value;
+
+        axios.post('/members', {
+            name: name,
+            password: password,
+            email: email
+        })
+            .then(function (response) {
+                console.log(response);
+                if (response.status === 201) {
+                    window.location.href = '/loginForm';
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 페이지</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-top: 100px;
+        }
+        .btn {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center mb-4">로그인</h1>
+    <div class="card">
+        <div class="card-body">
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="text" id="email" class="form-control" placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" class="form-control" placeholder="Password">
+                </div>
+                <button type="submit" class="btn btn-primary">로그인</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="/oauth2/authorization/google" class="btn btn-danger">구글 로그인</a>
+                <a href="/oauth2/authorization/kakao" class="btn btn-warning">카카오 로그인</a>
+                <a href="/oauth2/authorization/naver" class="btn btn-success">네이버 로그인</a>
+            </div>
+            <div class="text-center mt-3">
+                <a href="/joinForm">회원가입을 아직 하지 않으셨나요?</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    // 페이지가 로드될 때 실행
+    window.onload = function() {
+        // 쿠키를 파싱
+        var cookies = document.cookie.split('; ');
+
+        // accessToken과 refreshToken을 읽어옴
+        var accessToken = getCookieValue(cookies, 'access_token');
+        var refreshToken = getCookieValue(cookies, 'refresh_token');
+
+        // 토큰이 있으면 로컬 스토리지에 저장
+        if (accessToken && refreshToken) {
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+
+            // 쿠키에 있는 토큰 삭제
+            document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+            // 메인 페이지로 이동
+            window.location.href = '/test';
+        }
+    };
+
+    function getCookieValue(cookies, cookieName) {
+        const cookie = cookies.find(row => row.startsWith(cookieName + '='));
+        return cookie ? cookie.split('=')[1] : null;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('password').value;
+
+        axios.post('/auths', {
+            email: email,
+            password: password
+        })
+            .then(function (response) {
+                if (response.status === 200) {
+                    alert('로그인에 성공하였습니다!');
+
+                    // 기존 토큰 삭제
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+
+                    // 토큰을 로컬 스토리지에 저장
+                    localStorage.setItem('accessToken', response.data.accessToken);
+                    localStorage.setItem('refreshToken', response.data.refreshToken);
+
+                    window.location.href = '/test';
+                }
+            })
+            .catch(function (error) {
+                console.log("error", error);
+                if (error.response && error.response.data) {
+                    alert(error.response.data.message);
+                }
+            });
+    });
+</script>
+
+</body>
+</html>
